@@ -14,7 +14,7 @@ end
 
 class Hash
   def method_missing _method
-    return self[_method]
+    return self[_method].is_a?(Hash) ? self[_method][:data] : self[_method]
   end
 end
 

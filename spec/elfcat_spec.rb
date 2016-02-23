@@ -20,9 +20,27 @@ describe Elfcat do
     end
 
     context 'loaded Elf file' do
+      before :each do
+        e = Elf.new @glob.first
+      end
+
       it 'should be able to parse file header' do
         @elf.file_header.debug
         expect(@elf.file_header.ei_magic_number).to eq(0x7F454C46)
+      end
+
+      it 'should be able to parse section tables' do
+        @elf.section_table.debug
+        expect(@elf.section_table.data.keys.size).to be > 0
+      end
+
+      it 'should be able to parse section names' do
+        @elf.section_names.debug
+        expect(@elf.section_names.data.length).to be > 0
+      end
+
+      it 'should be able to parse section tables with names' do
+        @elf.section_table_with_names.debug
       end
     end
   end

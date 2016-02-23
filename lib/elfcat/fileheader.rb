@@ -1,13 +1,11 @@
-class FileHeader
-  attr_reader :file_header
-
+class FileHeader < Base
   FH = {
     ei_magic_number:        [0x00,4],
-    ei_class:               [0x04],
-    ei_data:                [0x05],
-    ei_version:             [0x06],
-    ei_osabi:               [0x07],
-    ei_abiversion:          [0x08],
+    ei_class:               [0x04,1],
+    ei_data:                [0x05,1],
+    ei_version:             [0x06,1],
+    ei_osabi:               [0x07,1],
+    ei_abiversion:          [0x08,1],
     e_type:                 [0x10,2],
     e_machine:              [0x12,2],
     e_version:              [0x14,4],
@@ -23,28 +21,19 @@ class FileHeader
     e_shstrndx:             [0x32,2]
   }
 
-  def initialize _x
-    @data = Hash.new
-    @debug = Proc.new{self.debug}
+  def initialize
+    super
+    x = $resource.slice_with_index(0, 64)
 
     FH.each do |k, v|
-      @data[k] = Util.concatenate(_x, v[0], v[1] || 1)
+      @data[k] = Util.concatenate(x, v[0], v[1])
     end
-  end
-
-  def method_missing _method
-    puts "i'm called"
-    return @data[_method][:data]
-  end
-
-  def [](_name)
-    return @data[_name]
   end
 
   def debug
     @data.each do |k, d|
       k_s = sprintf("%32s", k)
-      puts "#{k_s} #{CuteHex.x d.data}"
+      puts "#{k_s}: #{CuteHex.x d.data, slicer: :byte, word_size: (FH[k][1] * 8), style: :data, pad_zeros: true}"
     end
   end
 end
