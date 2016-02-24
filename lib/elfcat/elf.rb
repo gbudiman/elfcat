@@ -13,6 +13,10 @@ class Elf
     return $resource
   end
 
+  def program_header
+    @program_header ||= ProgramHeader.new(file_header, section_table_with_names)
+  end
+
   def section_table
     @section_table ||= SectionTable.new(file_header)
   end
@@ -23,5 +27,9 @@ class Elf
 
   def section_table_with_names
     section_table.populate(section_names)
+  end
+
+  def string_table
+    @string_table ||= StringTable.new(section_table_with_names)
   end
 end

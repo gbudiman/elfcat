@@ -1,4 +1,6 @@
 class SectionTable < Base
+  attr_reader :index, :addresses
+
   SH = {
     sh_name:       [0x00, 4],
     sh_type:       [0x04, 4],
@@ -99,6 +101,7 @@ class SectionTable < Base
   def initialize _fh
     super()
     @index = Hash.new
+    @addresses = Hash.new
 
     parse _fh
   end
@@ -106,9 +109,16 @@ class SectionTable < Base
   def populate _sn
     @data.each do |k, d|
       @data[k][:sh_real_name] = _sn[k]
+      @index[_sn[k]] = k
+      @addresses[d.sh_addr] = _sn[k]
+      @addresses[d.sh_offset] = _sn[k]
     end
 
     return self
+  end
+
+  def get_by_index _n
+    return @data[@index[_n]]
   end
 
   def debug
@@ -142,21 +152,12 @@ private
 
   def parse _fh
     base_elf_address = _fh.e_shoff
-    entry_element_size = _fh.e_shentsize
-    entry_count = _fh.e_shnum
-    section_table_length = entry_element_size * entry_count
+    struct_element_size = _fh.e_shentsize
+    struct_count = _fh.e_shnum
+    section_table_length = struct_element_size * struct_count
 
     x = $resource.slice_with_index(base_elf_address, section_table_length)
 
-    entry_count.times do |i|
-      st = Hash.new
-      struct_address = i * entry_element_size
-
-      SH.each do |k, v|
-        st[k] = Util.concatenate(x, struct_address + v[0], v[1])
-      end
-
-      @data[i] = st.dup
-    end
+    parse_struct(SH, x, struct_count, struct_element_size)
   end
 end

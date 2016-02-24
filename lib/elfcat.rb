@@ -5,6 +5,8 @@ require "elfcat/base"
 require "elfcat/fileheader"
 require "elfcat/sectiontable"
 require "elfcat/sectionname"
+require "elfcat/stringtable"
+require "elfcat/programheader"
 
 module Elfcat
 end

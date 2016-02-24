@@ -1,7 +1,7 @@
-class SectionName < Base
-  def initialize _fh, _st
+class StringTable < Base
+  def initialize _st
     super()
-    parse _fh, _st
+    parse _st
   end
 
   def debug
@@ -14,8 +14,8 @@ class SectionName < Base
   end
 
 private
-  def parse _fh, _st
-    entry = _st[_fh.e_shstrndx]
+  def parse _st
+    entry = _st.get_by_index('.strtab')
     base_elf_address = entry.sh_offset
     length = entry.sh_size
 
