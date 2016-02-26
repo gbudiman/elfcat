@@ -106,12 +106,27 @@ class SectionTable < Base
     parse _fh
   end
 
+  def annotate_virtual_address_mapping _map
+    @data.each do |k, d|
+      next if LUT_SH_TYPE[d.sh_type] =~ /(NULL|NOBITS)$/
+
+      #puts "##{d.sh_real_name} @#{CuteHex.x d.sh_offset} #{CuteHex.x d.sh_addr} (#{d.sh_size})"
+      mapping = _map[d.sh_offset]
+
+      if mapping and mapping.base != d.sh_addr
+        d[:sh_vtpmap] = mapping.base
+      end
+    end
+  end
+
   def populate _sn
     @data.each do |k, d|
       @data[k][:sh_real_name] = _sn[k]
       @index[_sn[k]] = k
-      @addresses[d.sh_addr] = _sn[k]
-      @addresses[d.sh_offset] = _sn[k]
+      @addresses[d.sh_addr] ||= Array.new
+      @addresses[d.sh_addr].push _sn[k]
+      @addresses[d.sh_offset] ||= Array.new
+      @addresses[d.sh_offset].push _sn[k]
     end
 
     return self
@@ -119,6 +134,10 @@ class SectionTable < Base
 
   def get_by_index _n
     return @data[@index[_n]]
+  end
+
+  def at_address _x
+    return @addresses[_x]
   end
 
   def debug
@@ -129,6 +148,7 @@ class SectionTable < Base
       sh_type_enum_s = sprintf("%-8.8s", LUT_SH_TYPE[d.sh_type] || d.sh_type)
       sh_flag_enum_s = sprintf("%-8.8s", LUT_SH_FLAGS[d.sh_flags] || d.sh_flags)
       sh_mem_address_s = CuteHex.x d.sh_addr
+      sh_mem_address_s += d.sh_vtpmap ? " -> #{CuteHex.x d.sh_vtpmap}" : ' '*15
       sh_elf_address_s = CuteHex.x d.sh_offset
       sh_size_s = sprintf("%8d", d.sh_size)
 
@@ -140,13 +160,13 @@ private
   def print_debug_header _has_real_name = false
     case _has_real_name
     when false
-      puts "----------------------------------------------------------------"
-      puts " IDX | nidx type     flag     | mem_addr    elf_addr    size (B)"
-      puts "----------------------------------------------------------------"
+      puts "-------------------------------------------------------------------------------"
+      puts " IDX | nidx type     flag     | vmem_addr   -> pmem_addr   elf_addr    size (B)"
+      puts "-------------------------------------------------------------------------------"
     else
-      puts "----------------------------------------------------------------------------"
-      puts " IDX | name             type     flag     | mem_addr    elf_addr    size (B)"
-      puts "----------------------------------------------------------------------------"
+      puts "-------------------------------------------------------------------------------------------"
+      puts " IDX | name             type     flag     | vmem_addr   -> pmem_addr   elf_addr    size (B)"
+      puts "-------------------------------------------------------------------------------------------"
     end
   end
 

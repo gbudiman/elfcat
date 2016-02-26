@@ -32,4 +32,8 @@ class Elf
   def string_table
     @string_table ||= StringTable.new(section_table_with_names)
   end
+
+  def symbol_table
+    @symbol_table ||= SymbolTable.new(section_table_with_names, string_table, program_header)
+  end
 end

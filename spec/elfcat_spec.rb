@@ -40,7 +40,7 @@ describe Elfcat do
       end
 
       it 'should be able to parse section tables with names' do
-        @elf.section_table_with_names.debug
+        @elf.section_table_with_names #.debug
         expect(@elf.section_table.index.length).to be > 0
         expect(@elf.section_table.addresses.length).to be > 0
       end
@@ -52,6 +52,19 @@ describe Elfcat do
 
       it 'should be able to parse program header' do
         @elf.program_header.debug
+        @elf.section_table_with_names.debug
+        expect(@elf.program_header.data.length).to be > 0
+
+        expect(@elf.program_header.index.length).to be > 0
+        expect(@elf.program_header.elf_addresses.length).to be > 0
+        expect(@elf.program_header.mem_addresses.length).to be > 0
+      end
+
+      it 'should be able to parse symbol table' do
+        @elf.symbol_table.debug
+        expect(@elf.symbol_table.data.length).to be > 0
+
+        expect(@elf.symbol_table.index.length).to be > 0
       end
     end
   end

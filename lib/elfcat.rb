@@ -7,6 +7,7 @@ require "elfcat/sectiontable"
 require "elfcat/sectionname"
 require "elfcat/stringtable"
 require "elfcat/programheader"
+require "elfcat/symboltable"
 
 module Elfcat
 end
